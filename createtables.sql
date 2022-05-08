@@ -26,6 +26,5 @@ CREATE TABLE IF NOT EXISTS chat_private (
     to_mcid VARCHAR(20),
     to_uuid VARCHAR(36),
     to_nick VARCHAR(32),
-    command VARCHAR(16),
     content VARCHAR(256) CHARACTER SET utf8mb4
 );

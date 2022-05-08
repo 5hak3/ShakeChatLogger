@@ -1,6 +1,8 @@
 package com.github.shake.shakechatlogger;
 
-import com.github.ucchyocean.lc.channel.Channel;
+import com.github.ucchyocean.lc3.bukkit.event.LunaChatBukkitChannelChatEvent;
+import com.github.ucchyocean.lc3.channel.Channel;
+import com.github.ucchyocean.lc3.member.ChannelMember;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -42,10 +44,25 @@ public class ChatListener implements Listener {
         // globalのとき
         if (channel == null || message.startsWith("!") || message.startsWith("#!")) {
             this.gChat(player, message);
-            return;
         }
-        // globalじゃない時
-        this.cChat(player, message, channel.getName());
+        // globalじゃない時 -> public void onChat(LunaChatBukkitChannelChatEvent event)へ
+    }
+
+    @EventHandler
+    public void onChat(LunaChatBukkitChannelChatEvent event) {
+        ChannelMember chMember = event.getMember();
+        Channel ch = event.getChannel();
+        Player player = Bukkit.getPlayer(chMember.getName());
+        String message = event.getPreReplaceMessage();
+        if (ch.isPersonalChat()) {
+            ArrayList<ChannelMember> members = new ArrayList<>(ch.getMembers());
+            members.remove(chMember);
+            Player toPlayer = Bukkit.getPlayer(members.get(0).getName());
+            pChat(player, message, toPlayer);
+        }
+        else {
+            cChat(player, message, ch.getName());
+        }
     }
 
     /**
@@ -53,6 +70,8 @@ public class ChatListener implements Listener {
      */
     @EventHandler
     public void onCommand(PlayerCommandPreprocessEvent event) {
+        if (this.config.isEnabledLC) return;
+
         String raw = event.getMessage();
         ArrayList<String> stList = new ArrayList<>(Arrays.asList(raw.split(" ")));
         // stListの要素数が1以下だと引数がないので少なくとも対象コマンドではない
@@ -76,7 +95,7 @@ public class ChatListener implements Listener {
                 Player player = event.getPlayer();
                 stList.remove(0);
                 String message = String.join(" ", stList);
-                pChat(player, message, toPlayer, command);
+                pChat(player, message, toPlayer);
 
             default:
                 break;
@@ -119,10 +138,10 @@ public class ChatListener implements Listener {
     /**
      * バニラ/LC共通のPrivateチャット用
      */
-    private void pChat(Player player, String message, Player toPlayer, String command) {
+    private void pChat(Player player, String message, Player toPlayer) {
         try (Connection conn = this.config.getConnection(); PreparedStatement stmt = conn.prepareStatement(
-                "INSERT INTO chat_private(dtime, mcid, uuid, nick, content, to_mcid, to_uuid, to_nick, command) " +
-                        "VALUES (CURRENT_TIMESTAMP, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                "INSERT INTO chat_private(dtime, mcid, uuid, nick, content, to_mcid, to_uuid, to_nick) " +
+                        "VALUES (CURRENT_TIMESTAMP, ?, ?, ?, ?, ?, ?, ?)")) {
             setStatements(player, message, stmt);
             if (toPlayer != null) {
                 stmt.setString(5, toPlayer.getName());
@@ -139,7 +158,6 @@ public class ChatListener implements Listener {
                 stmt.setNull(6, Types.VARCHAR);
                 stmt.setNull(7, Types.VARCHAR);
             }
-            stmt.setString(8, command);
             stmt.execute();
         } catch (SQLException e) {
             e.printStackTrace();

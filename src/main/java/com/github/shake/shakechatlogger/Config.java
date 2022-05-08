@@ -1,8 +1,8 @@
 package com.github.shake.shakechatlogger;
 
 import com.earth2me.essentials.Essentials;
-import com.github.ucchyocean.lc.LunaChat;
-import com.github.ucchyocean.lc.LunaChatAPI;
+import com.github.ucchyocean.lc3.LunaChat;
+import com.github.ucchyocean.lc3.LunaChatAPI;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -45,7 +45,7 @@ public class Config implements CommandExecutor {
             this.ess = (Essentials) this.plugin.getServer().getPluginManager().getPlugin("Essentials");
         }
         if (this.isEnabledLC) {
-            this.lunaChatAPI = LunaChat.getInstance().getLunaChatAPI();
+            this.lunaChatAPI = LunaChat.getAPI();
         }
 
         ConfigurationSection dbConf = plugin.getConfig().getConfigurationSection("database");
