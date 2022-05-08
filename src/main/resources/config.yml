@@ -1,0 +1,7 @@
+# Database Connection Info
+database:
+  host: localhost
+  port: 3306
+  database: shakecl
+  user: root
+  password: root

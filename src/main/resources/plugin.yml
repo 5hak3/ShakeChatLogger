@@ -1,0 +1,23 @@
+name: ShakeChatLogger
+version: '${project.version}'
+main: com.github.shake.shakechatlogger.ShakeChatLogger
+softdepend: [ LunaChat, Essentials ]
+authors: [ 5hak3 ]
+description: チャットをDBにロギングする
+
+permissions:
+  shakecl.*:
+    children:
+      shakecl.op: true
+      shakecl.player: true
+  shakecl.op:
+    default: op
+  shakecl.player:
+    default: not op
+
+commands:
+  sclreload:
+    usage: /<command>
+    description: reload configs
+    permission: shakecl.op
+    permission-message: permission denied
